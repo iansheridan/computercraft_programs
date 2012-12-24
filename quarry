@@ -57,14 +57,14 @@ function row(width)
 end
 
 function level()
-  local side
+  local sides = [2,4]
   local output1 = false
   local output2 = false
   local curLength = 0
   local curWidth = 0
   -- repeat levels till can move down
   for i=1,length do
-    side = (i%2)*2
+    side = sides[i%2]
     print(side)
     if i == 1 then
       turnToDir(2)
@@ -94,10 +94,11 @@ function levelReturnToStart( length, width )
     turnToDir(3)
   else
     turnToDir(4)
-    goForward(width-1)
+    goForward(width)
     turnToDir(3)
   end
   goForward(length-1)
+  goDown(1)
 end
 
 function quarry()
@@ -145,18 +146,22 @@ function goUp( times )
   return succeed
 end
 
-function turnToDir( side )
-  local compare = math.abs(dir - side)
-  local turnTo = "right"
-  if compare == 3 then
-    if dir < side then
-      turnTo = "left"
-    end
+function turnToDir( toDir )
+  local times = math.abs(dir - toDir)
+  local turnTo
+  if dir < toDir and times < 3 then
+    turnTo = "right"
+  elseif dir > toDir and times == 3 then
+    turnTo = "right"
+  else
+    turnTo = "left"
+  end
+  if times == 3 then
     m.turn(turnTo, 1)
   else
-    m.turn(turnTo, compare)
+    m.turn(turnTo, times)
   end
-  dir = side
+  dir = toDir
   printStats()
 end
 
