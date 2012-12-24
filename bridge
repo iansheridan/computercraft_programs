@@ -1,0 +1,80 @@
+-- Dar Tunneler by Darganis
+-- version: 0.0.4 9/3/2012
+
+local m = dagsAPI.Move.new()
+local u = dagsAPI.Utils.new()
+local a = dagsAPI.Action.new()
+
+params = { ... }
+slot = 1
+stop = false
+
+if #params == 1 then
+
+  length = tonumber(params[1])
+
+else
+
+  print("usage: bridge [length]")
+  return
+
+end
+
+print("Building bridge "..length.." blocks long...")
+
+function testSlot()
+  turtle.select(slot)
+  while turtle.getItemCount(slot) == 0 do
+    slot = slot + 1
+    if slot == 17 then
+      print("Out of mats.")
+      stop = true
+      break
+    end
+  end
+end
+
+function placeDown()
+  testSlot()
+  a.placeDown(slot)
+end
+
+function placeForward()
+  testSlot()
+  a.place(slot)
+end
+
+function buildLine()
+  m.forward(1)
+  placeDown()
+  m.turn("left",1)
+  m.forward(1)
+  placeDown()
+  placeForward()
+  m.turn("right",2)
+  m.forward(2)
+  placeDown()
+  placeForward()
+  m.turn("left",2)  
+  m.forward(1)
+  m.turn("right",1)
+end
+
+for i=1,length do
+  if u.needsFuel() and not u.refuel(16) then
+    print("Out of fuel... please place more in slot 16...")
+    while true do
+      if u.refuel(16) then
+        buildLine()
+        break
+      end
+    end
+  elseif stop then
+    print("done...")
+  else
+    buildLine()
+  end
+end
+
+m.turn("right", 2)
+m.forward(length)

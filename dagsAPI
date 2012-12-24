@@ -1,0 +1,369 @@
+-- Dags API by Darganis
+-- Version: 0.0.2 9/3/2012
+
+--
+-- class Move
+--
+
+Move = {}
+Move.new = function ()
+  local self = {}
+  self.up = function ( num )
+    local curNum = 0
+    local output = false
+    while curNum < num do
+      output = turtle.up()
+      if output then
+        curNum = curNum + 1
+      end
+    end
+    return output
+  end
+  self.down = function ( num )
+    local curNum = 0
+    local output = false
+    while curNum < num do
+      output = turtle.down()
+      if output then
+        curNum = curNum + 1
+      end
+    end
+    return output
+  end
+  self.forward = function ( num )
+    local curNum = 0
+    local output = false
+    while curNum < num do
+      output = turtle.forward()
+      if output then
+        curNum = curNum + 1
+      end
+    end
+    return output
+  end
+  self.back = function ( num )
+    local curNum = 0
+    local output = false
+    while curNum < num do
+      output = turtle.back()
+      if output then
+        curNum = curNum + 1
+      end
+    end
+    return output
+  end
+  self.turn = function ( direction, num )
+    if direction == "left" then
+      for i=1,num do
+        turtle.turnLeft()
+      end
+    elseif direction == "right" then
+      for i=1,num do
+        turtle.turnRight()
+      end
+    end
+  end
+  self.run = function ( action, num )
+    if action == "up" then
+      self.up(num)
+    elseif action == "down" then
+      self.down(num)
+    elseif action == "forward" then
+      self.forward(num)
+    elseif action == "back" then
+      self.back(num)
+    elseif action == "turnLeft" then
+      self.turn("left", num)
+    elseif action == "turnRight" then
+      self.turn("right",num)
+    end
+  end
+  self.queue = function ( queue )
+    times = # queue
+    for i=1,times do
+      self.run(queue[i],1)
+    end
+  end
+  return self
+end
+
+-- END class Move
+
+--
+-- class Action
+--
+
+Action = {}
+Action.new = function ()
+  local self = {}
+  self.digFront = function ()
+    local output = true
+    repeat
+      output = turtle.dig()
+      sleep(0.4)
+    until not (output and turtle.detect())
+    return output
+  end
+  self.digUp = function ()
+    local output = true
+    repeat
+      output = turtle.digUp()
+      sleep(0.4)
+    until not (output and turtle.detectUp())
+    return output
+  end
+  self.digDown = function ()
+    local output = true
+    output = turtle.digDown()
+    return output
+  end
+  self.attackFront = function ()
+    local output = true
+    repeat
+      output = turtle.attack()
+    until not output
+    return output
+  end
+  self.attackUp = function ()
+    local output = true
+    repeat
+      output = turtle.attackUp()
+    until not output
+    return output
+  end
+  self.attackDown = function ()
+    local output = true
+    repeat
+      output = turtle.attackDown()
+    until not output
+    return output
+  end
+  self.place = function ( slot )
+    turtle.select(slot)
+    turtle.place()
+  end
+  self.placeUp = function ( slot )
+    turtle.select(slot)
+    turtle.placeUp()
+  end
+  self.placeDown = function ( slot )
+    turtle.select(slot)
+    turtle.placeDown()
+  end
+  return self
+end
+
+-- END class Action
+
+--
+-- class Queue
+--
+
+Queue = {}
+Queue.new = function ( sleepLength, fuelSLot )
+
+  local self, a, m, u, p = {}, Action.new(), Move.new(), Utils.new(), Printer.new()
+  local sleepLength = sleepLength or 1
+  local fuelSLot = fuelSLot or 16
+
+  self.runAction = function ( action, num )
+    local num = num or 1
+    if action == "up" then
+      m.up(num)
+    elseif action == "down" then
+      m.down(num)
+    elseif action == "forward" then
+      m.forward(num)
+    elseif action == "back" then
+      m.back(num)
+    elseif action == "turnLeft" then
+      m.turn("left", num)
+    elseif action == "turnRight" then
+      m.turn("right",num)
+    elseif action == "digFront" then
+      a.digFront()
+    elseif action == "digUp" then
+      a.digUp()
+    elseif action == "digDown" then
+      a.digDown()
+    elseif string.find(action,"place#") then
+      for k, slot in string.gmatch(action,"(%w+)#(%w+)") do
+        a.place(tonumber(slot))
+      end
+    elseif string.find(action,"placeUp#") then
+      for k, slot in string.gmatch(action,"(%w+)#(%w+)") do
+        a.placeUp(tonumber(slot))
+      end
+    elseif string.find(action,"placeDown#") then
+      for k, slot in string.gmatch(action,"(%w+)#(%w+)") do
+        a.placeDown(tonumber(slot))
+      end
+    elseif action == "sleep" then
+      self.sleepDo()
+    end
+  end
+
+  self.run = function ( queue, verbose )
+    times = # queue
+    for i=1,times do
+      if u.needsFuel() and not u.refuel(fuelSLot) then
+        print("! Out  of fuel !")
+        print("!   ALL STOP   !")
+        print("! reset turtle !")
+        return nil
+      else
+        -- might have to into the TurtleUtils class
+        turtle.select(1)
+        if type(queue[i]) == "table" then
+          self.run(queue[i])
+        else
+          if verbose then
+            print("Running: "..queue[i])
+          else
+            p.dot()
+          end
+          self.runAction(queue[i],1)
+        end
+      end
+    end
+    if verbose then
+      print(" DONE")
+    else
+      print("")
+    end
+  end
+
+  self.sleepDo = function ()
+    sleep(sleepLength)
+  end
+
+  return self
+end
+
+-- END class Queue
+
+--
+-- class TurtleUtils
+--
+
+Utils = {}
+Utils.new = function ()
+  local self = {}
+  -- Refuel from a certain slot in inventory
+  -- use: self.refuel(1)
+  self.refuel = function ( slot )
+    turtle.select(slot)
+    if turtle.getItemCount(slot) == 0 then
+      return false
+    end
+    return turtle.refuel()
+  end
+  self.needsFuel = function ()
+    if turtle.getFuelLevel() == "unlimited" or turtle.getFuelLevel() > 0 then
+      return false
+    end
+    return true
+  end
+  self.dropAllItems = function (  )
+    for slot=1,16 do
+      turtle.select(slot)
+      turtle.drop()
+    end
+  end
+  return self
+end
+
+-- END class TurtleUtils
+
+--
+-- class Printer
+--
+Printer = {}
+Printer.new = function (term_size)
+  local self = {}
+  self.term_w, self.term_h = term.getSize()
+  self.dot = function ()
+    local x
+    local y
+    term.write(".")
+    x, y = term.getCursorPos()
+    if x == self.term_w then
+      y = y+1
+      term.setCursorPos(1,y)
+      if y == self.term_h then
+        term.scroll(1)
+        term.setCursorPos(1,self.term_h)
+      end
+    end
+  end
+  return self
+end
+
+--
+-- class Logger
+--
+Logger = {}
+Logger.new = function ( logname )
+  local self = {}
+  self.log_level = 1
+  self.filename = "." + logname
+  self.save_to_log = function (text)
+    if text and text~="" then
+      file=fs.open(self.filename,"w")
+      file.write(text)
+      file.close()
+    -- else
+    --   fs.delete(self.filename)
+    end
+  end
+  self.level = function ( level )
+    if level and level == "DEBUG" then
+      self.log_level = 2
+    elseif level and level == "INFO" then
+      self.log_level = 1
+    elseif level and level == "ERROR" then
+      self.log_level = 0
+    end
+  end
+  self.debug = function ( text )
+    if self.log_level > 1 then
+      local log = "[DEBUG] " + text
+      self.save_to_log(log)
+    end
+  end
+  self.info = function ( text )
+    if self.log_level > 1 then
+      local log = "[INFO] " + text
+      self.save_to_log(log)
+    end
+  end
+  self.error = function ( text )
+    if self.log_level > 1 then
+      local log = "[ERROR] " + text
+      self.save_to_log(log)
+    end
+  end
+end
+
+--
+-- class FileStore
+--
+FileStore = {}
+FileStore.new = function ( name )
+  local self = {}
+  self.filename = "." + name
+  self.save_to_file = function (text)
+    if text and text~="" then
+      file=fs.open(self.filename,"w")
+      file.write(text)
+      file.close()
+    else
+      fs.delete(self.filename)
+    end
+  end
+  self.write = function ( text )
+    self.save_to_file(text)
+  end
+end
+
+print("Dags API is loaded")

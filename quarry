@@ -1,0 +1,140 @@
+-- Dar Quarry by Darganis
+-- version: 0.0.2 9/3/2012
+
+local m = dagsAPI.Move.new()
+local a = dagsAPI.Action.new()
+local u = dagsAPI.Utils.new()
+
+local params = { ... }
+
+if #params == 1 then
+
+  local length  = tonumber(params[1])
+
+else
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Radius of quarry? ")
+  local length = tonumber(read())
+
+end
+
+-- set the width to length
+local width = length
+local depth = 0
+-- Coordinates
+local xcord = 0
+local ycord = 0
+local zcord = 0
+-- Direction
+local xdir = 0
+local zdir = 1
+
+
+print("")
+
+function refuel()
+  if turtle.getFuelLevel() < 5 then
+    print("Refueling...")
+    shell.run("refuel", 5)
+  end
+end
+
+function pillar()
+  local output = true
+  output1 = a.digFront()
+  m.forward(1)
+  output2 = a.digDown()
+  output3 = a.digUp()
+  return ( output1 and output2 and output3 )
+end
+
+function row(width)
+  local curWidth = 0
+  while curWidth < width do
+    output = pillar()
+    curWidth = curWidth + 1
+  end
+  return output, curWidth
+end
+
+function level()
+  local side = ""
+  local output1 = false
+  local output2 = false
+  local curLength = 0
+  local curWidth = 0
+  -- repeat levels till can move down
+  for i=1,length do
+    if i == 1 then
+      output2, curWidth = row(width-1)
+    else
+      m.turn(getSide(i),1)
+      output1 = pillar()
+      m.turn(getSide(i),1)
+      output2, curWidth = row(width-1)
+    end
+    side = getSide(i)
+    curLength = curLength + 1
+  end
+  levelReturnToStart(side,curLength,curWidth)
+end
+
+function quarry()
+  refuel()
+  if turtle.getFuelLevel() == 0 then
+    print("I am out of fuel. Please give me fuel and try again.")
+    return
+  end
+  a.digFront()
+  m.forward(1)
+  goNextLevel()
+  repeat
+    level()
+  until not goNextLevel()
+end
+
+function goNextLevel()
+  a.digDown()
+  output = m.down(1)
+  if output then
+    depth = depth + 1
+  end
+  a.digDown()
+  output = m.down(1)
+  if output then
+    depth = depth + 1
+  end
+  m.turn("right", 1)
+  return output
+end
+
+-- this is supposed to return the side to turn to
+function getSide( index )
+  local mod = math.fmod(index,2)
+  if mod == 1 then
+    return "right"
+  else
+    return "left"
+  end
+end
+
+function levelReturnToStart( side, length, width )
+  if side == "left" then
+    m.turn("left", 1)
+  else
+    m.turn("right", 2)
+    m.forward(width-1)
+    m.turn("left", 1)
+  end
+  m.forward(length-1)
+  m.down(1)
+  m.turn("right", 2)
+end
+
+
+
+-- pause to close screen
+sleep(2)
+quarry()

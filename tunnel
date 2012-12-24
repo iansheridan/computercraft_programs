@@ -1,0 +1,151 @@
+-- Dar Tunneler by Darganis
+-- version: 0.0.4 9/3/2012
+
+local m = dagsAPI.Move.new()
+local a = dagsAPI.Action.new()
+local u = dagsAPI.Utils.new()
+local q = dagsAPI.Queue.new(0)
+
+local params = { ... }
+
+if #params == 3 then
+
+  height  = tonumber(params[1])
+  width   = tonumber(params[2])
+  length  = tonumber(params[3])
+
+else
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Height of tunnel? ")
+  height = tonumber(read())
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Width of tunnel? ")
+  width = tonumber(read())
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Length of tunnel? ")
+  length = tonumber(read())
+
+end
+
+print("")
+
+function refuel()
+  if turtle.getFuelLevel() < 5 then
+    print("Refueling...")
+    shell.run("refuel", 5)
+  end
+end
+
+function upUnlimited()
+  local curHeight = 0
+  for u = 1,5 do
+    repeat
+      refuel()
+      a.digUp()
+      if m.up() then
+        curHeight = curHeight + 1
+      end
+      sleep(0.25)
+    until turtle.detectUp() == false
+  end
+  refuel()
+  m.down(curHeight)
+end
+
+function upUntil( num )
+  local curHeight = 0
+  a.digUp()
+  curHeight = curHeight + 1
+  while curHeight < num do
+    refuel()
+    m.up(1)
+    a.digUp()
+    curHeight = curHeight + 1
+  end
+  refuel()
+  m.down(num-1)
+end
+
+function pillar()
+  local curHeight = 0
+  a.digFront()
+  curHeight = curHeight + 1
+  m.forward(1)
+  a.digDown()
+  curHeight = curHeight + 1
+  upUntil(height-curHeight)
+end
+
+function row(width)
+  local curWidth = 0
+  while curWidth < width do
+    pillar()
+    curWidth = curWidth + 1
+  end
+end
+
+function placeTorch( slot )
+  m.turn("right",1)
+  a.place(16)
+  m.turn("left",1)
+end
+
+function tunnel()
+  local side = ""
+  refuel()
+  if turtle.getFuelLevel() == 0 then
+    print("I am out of fuel. Please give me fuel and try again.")
+    return
+  end
+  for i=1,length do
+    if i == 1 then
+      m.up(1)
+      pillar()
+      m.turn("right",1)
+      row(width-1)
+    else
+      m.turn(getSide(i),1)
+      pillar()
+      m.turn(getSide(i),1)
+      row(width-1)
+      if getSide(i) == "right" and ( math.fmod(i,6) == 0 or math.fmod(i,6) == 1 ) then
+        placeTorch()
+      end
+    end
+    side = getSide(i)
+  end
+  returnToStart(side)
+end
+
+-- this is supposed to return the side to turn to
+function getSide( index )
+  local mod = math.fmod(index,2)
+  if mod == 1 then
+    return "right"
+  else
+    return "left"
+  end
+end
+
+function returnToStart( side )
+  if side == "left" then
+    m.turn("left", 1)
+  else
+    m.turn("right", 2)
+    m.forward(width-1)
+    m.turn("left", 1)
+  end
+  m.forward(length)
+  m.down(1)
+  print("Done!")
+end
+
+-- pause to close screen
+sleep(2)
+tunnel()

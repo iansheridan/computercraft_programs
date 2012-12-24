@@ -1,0 +1,4 @@
+os.loadAPI("dagsAPI")
+os.loadAPI("turtlex/inventory")
+os.loadAPI("turtlex/turtlex")
+shell.run("fuel")
