@@ -102,18 +102,18 @@ Action.new = function ()
   local self = {}
   self.digFront = function ()
     local output = true
-    repeat
+    while turtle.detect() do
       output = turtle.dig()
-      sleep(0.4)
-    until not (output and turtle.detect())
+      sleep(0.5)
+    end
     return output
   end
   self.digUp = function ()
     local output = true
-    repeat
+    while turtle.detectUp() do
       output = turtle.digUp()
-      sleep(0.4)
-    until not (output and turtle.detectUp())
+      sleep(0.5)
+    end
     return output
   end
   self.digDown = function ()

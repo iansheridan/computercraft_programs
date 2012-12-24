@@ -27,7 +27,7 @@ xcord = 0
 ycord = 0
 zcord = 0
 -- Direction
-dir = 1
+direction = 1
 
 print("")
 
@@ -57,15 +57,18 @@ function row(width)
 end
 
 function level()
-  local sides = [2,4]
+  local side
   local output1 = false
   local output2 = false
   local curLength = 0
   local curWidth = 0
   -- repeat levels till can move down
   for i=1,length do
-    side = sides[i%2]
-    print(side)
+    if i%2 == 0 then
+      side = 4
+    else
+      side = 2
+    end
     if i == 1 then
       turnToDir(2)
       output2, curWidth = row(width-1)
@@ -119,13 +122,13 @@ end
 
 function goForward( times )
   local succeed, count = m.forward(times)
-  if dir == 1 then
+  if direction == 1 then
     zcord = zcord + count
-  elseif dir == 2 then
+  elseif direction == 2 then
     xcord = xcord + count
-  elseif dir == 3 then
+  elseif direction == 3 then
     zcord = zcord - count
-  elseif dir == 4 then
+  elseif direction == 4 then
     xcord = xcord - count
   end
   printStats()
@@ -147,11 +150,11 @@ function goUp( times )
 end
 
 function turnToDir( toDir )
-  local times = math.abs(dir - toDir)
+  local times = math.abs(direction - toDir)
   local turnTo
-  if dir < toDir and times < 3 then
+  if direction < toDir and times < 3 then
     turnTo = "right"
-  elseif dir > toDir and times == 3 then
+  elseif direction > toDir and times == 3 then
     turnTo = "right"
   else
     turnTo = "left"
@@ -161,7 +164,7 @@ function turnToDir( toDir )
   else
     m.turn(turnTo, times)
   end
-  dir = toDir
+  direction = toDir
   printStats()
 end
 
@@ -171,7 +174,7 @@ function printStats()
   print("xcord = "..xcord)
   print("ycord = "..ycord)
   print("zcord = "..zcord)
-  print("dir = "..dir)
+  print("direction = "..direction)
 end
 
 -- pause to close screen
