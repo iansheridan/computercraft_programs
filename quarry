@@ -9,28 +9,25 @@ local params = { ... }
 
 if #params == 1 then
 
-  local length  = tonumber(params[1])
+  length  = tonumber(params[1])
 
 else
 
   term.clear()
   term.setCursorPos(1,1)
   term.write("Radius of quarry? ")
-  local length = tonumber(read())
+  length = tonumber(read())
 
 end
 
 -- set the width to length
-local width = length
-local depth = 0
+width = length
 -- Coordinates
-local xcord = 0
-local ycord = 0
-local zcord = 0
+xcord = 0
+ycord = 0
+zcord = 0
 -- Direction
-local xdir = 0
-local zdir = 1
-
+dir = 1
 
 print("")
 
@@ -44,7 +41,7 @@ end
 function pillar()
   local output = true
   output1 = a.digFront()
-  m.forward(1)
+  goForward(1)
   output2 = a.digDown()
   output3 = a.digUp()
   return ( output1 and output2 and output3 )
@@ -60,25 +57,47 @@ function row(width)
 end
 
 function level()
-  local side = ""
+  local side
   local output1 = false
   local output2 = false
   local curLength = 0
   local curWidth = 0
   -- repeat levels till can move down
   for i=1,length do
+    side = (i%2)*2
+    print(side)
     if i == 1 then
+      turnToDir(2)
       output2, curWidth = row(width-1)
     else
-      m.turn(getSide(i),1)
+      turnToDir(1)
       output1 = pillar()
-      m.turn(getSide(i),1)
+      turnToDir(side)
       output2, curWidth = row(width-1)
     end
-    side = getSide(i)
     curLength = curLength + 1
   end
-  levelReturnToStart(side,curLength,curWidth)
+  levelReturnToStart(curLength,curWidth)
+end
+
+function goNextLevel()
+  a.digDown()
+  output = goDown(1)
+  a.digDown()
+  output = goDown(1)
+  a.digDown()
+  return output
+end
+
+function levelReturnToStart( length, width )
+  if xcord == 0 then
+    turnToDir(3)
+  else
+    turnToDir(4)
+    goForward(width-1)
+    turnToDir(3)
+  end
+  goForward(length-1)
 end
 
 function quarry()
@@ -88,52 +107,67 @@ function quarry()
     return
   end
   a.digFront()
-  m.forward(1)
+  goForward(1)
   goNextLevel()
   repeat
     level()
   until not goNextLevel()
 end
 
-function goNextLevel()
-  a.digDown()
-  output = m.down(1)
-  if output then
-    depth = depth + 1
+-- Utility Functions
+
+function goForward( times )
+  local succeed, count = m.forward(times)
+  if dir == 1 then
+    zcord = zcord + count
+  elseif dir == 2 then
+    xcord = xcord + count
+  elseif dir == 3 then
+    zcord = zcord - count
+  elseif dir == 4 then
+    xcord = xcord - count
   end
-  a.digDown()
-  output = m.down(1)
-  if output then
-    depth = depth + 1
-  end
-  m.turn("right", 1)
-  return output
+  printStats()
+  return succeed
 end
 
--- this is supposed to return the side to turn to
-function getSide( index )
-  local mod = math.fmod(index,2)
-  if mod == 1 then
-    return "right"
+function goDown( times )
+  local succeed, count = m.down(times)
+  ycord = ycord - count
+  printStats()
+  return succeed
+end
+
+function goUp( times )
+  local succeed, count = m.up(times)
+  ycord = ycord + count
+  printStats()
+  return succeed
+end
+
+function turnToDir( side )
+  local compare = math.abs(dir - side)
+  local turnTo = "right"
+  if compare == 3 then
+    if dir < side then
+      turnTo = "left"
+    end
+    m.turn(turnTo, 1)
   else
-    return "left"
+    m.turn(turnTo, compare)
   end
+  dir = side
+  printStats()
 end
 
-function levelReturnToStart( side, length, width )
-  if side == "left" then
-    m.turn("left", 1)
-  else
-    m.turn("right", 2)
-    m.forward(width-1)
-    m.turn("left", 1)
-  end
-  m.forward(length-1)
-  m.down(1)
-  m.turn("right", 2)
+function printStats()
+  term.clear()
+  term.setCursorPos(1,1)
+  print("xcord = "..xcord)
+  print("ycord = "..ycord)
+  print("zcord = "..zcord)
+  print("dir = "..dir)
 end
-
-
 
 -- pause to close screen
 sleep(2)

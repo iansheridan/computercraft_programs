@@ -17,7 +17,7 @@ Move.new = function ()
         curNum = curNum + 1
       end
     end
-    return output
+    return output, curNum
   end
   self.down = function ( num )
     local curNum = 0
@@ -28,7 +28,7 @@ Move.new = function ()
         curNum = curNum + 1
       end
     end
-    return output
+    return output, curNum
   end
   self.forward = function ( num )
     local curNum = 0
@@ -39,7 +39,7 @@ Move.new = function ()
         curNum = curNum + 1
       end
     end
-    return output
+    return output, curNum
   end
   self.back = function ( num )
     local curNum = 0
@@ -50,9 +50,12 @@ Move.new = function ()
         curNum = curNum + 1
       end
     end
-    return output
+    return output, curNum
   end
   self.turn = function ( direction, num )
+    if num == 0 then
+      return false
+    end
     if direction == "left" then
       for i=1,num do
         turtle.turnLeft()
@@ -62,6 +65,7 @@ Move.new = function ()
         turtle.turnRight()
       end
     end
+    return true
   end
   self.run = function ( action, num )
     if action == "up" then
