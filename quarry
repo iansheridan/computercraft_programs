@@ -116,22 +116,34 @@ function returnToStart( length, width )
 end
 
 function doDropOff()
-  local isFull = false
+  local isFull
+  local count
   -- test inventory
   for i=1,16 do
     turtle.select(i)
     count = turtle.getItemCount(i)
     if count == 0 then
+      isFull = false
       break
     else
       isFull = true
     end
   end
+  turtle.select(1)
   -- goTo start if isFull and come back
   if isFull then
     returnToStart()
     emptyInvemtory()
+    turnToDir(1)
+    goForward(1)
     goTo( savedCords["xcord"], savedCords["ycord"], savedCords["zcord"] )
+  end
+end
+
+function emptyInvemtory()
+  for i=1,16 do
+    turtle.select(i)
+    turtle.drop()
   end
 end
 
@@ -145,7 +157,7 @@ function quarry()
   goForward(1)
   goNextLevel()
   repeat
-    level()
+    level(math.abs(length - curCords["xcord"]))
   until not goNextLevel()
 end
 
@@ -159,7 +171,7 @@ end
 
 function goTo( x, y, z )
   repeat
-    doDigUp()
+    a.digUp()
   until not turtle.detectUp()
   -- deal with Y cord
   disty = math.abs( y - curCords["ycord"] )
@@ -257,6 +269,9 @@ function printStats()
   print("xcord = "..curCords["xcord"])
   print("ycord = "..curCords["ycord"])
   print("zcord = "..curCords["zcord"])
+  print("saved xcord = "..savedCords["xcord"])
+  print("saved ycord = "..savedCords["ycord"])
+  print("saved zcord = "..savedCords["zcord"])
   print("direction = "..direction)
 end
 
