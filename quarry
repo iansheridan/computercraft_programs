@@ -23,9 +23,14 @@ end
 -- set the width to length
 width = length
 -- Coordinates
-xcord = 0
-ycord = 0
-zcord = 0
+curCords = {}
+curCords["xcord"] = 0
+curCords["ycord"] = 0
+curCords["zcord"] = 0
+savedCords = {}
+savedCords["xcord"] = 0
+savedCords["ycord"] = 0
+savedCords["zcord"] = 0
 -- Direction
 direction = 1
 
@@ -40,10 +45,10 @@ end
 
 function pillar()
   local output = true
-  output1 = a.digFront()
+  output1 = doDigFront()
   goForward(1)
-  output2 = a.digDown()
-  output3 = a.digUp()
+  output2 = doDigDown()
+  output3 = doDigUp()
   return ( output1 and output2 and output3 )
 end
 
@@ -84,16 +89,16 @@ function level(rows)
 end
 
 function goNextLevel()
-  a.digDown()
+  doDigDown()
   output = goDown(1)
-  a.digDown()
+  doDigDown()
   output = goDown(1)
-  a.digDown()
+  doDigDown()
   return output
 end
 
 function levelReturnToStart( length, width )
-  if xcord == 0 then
+  if curCords["xcord"] == 0 then
     turnToDir(3)
   else
     turnToDir(4)
@@ -104,13 +109,39 @@ function levelReturnToStart( length, width )
   goDown(1)
 end
 
+function returnToStart( length, width )
+  saveCords()
+  goTo( 0, 0, 0 )
+  turnToDir(3)
+end
+
+function doDropOff()
+  local isFull = false
+  -- test inventory
+  for i=1,16 do
+    turtle.select(i)
+    count = turtle.getItemCount(i)
+    if count == 0 then
+      break
+    else
+      isFull = true
+    end
+  end
+  -- goTo start if isFull and come back
+  if isFull then
+    returnToStart()
+    emptyInvemtory()
+    goTo( savedCords["xcord"], savedCords["ycord"], savedCords["zcord"] )
+  end
+end
+
 function quarry()
   refuel()
   if turtle.getFuelLevel() == 0 then
     print("I am out of fuel. Please give me fuel and try again.")
     return
   end
-  a.digFront()
+  doDigFront()
   goForward(1)
   goNextLevel()
   repeat
@@ -120,20 +151,26 @@ end
 
 -- Utility Functions
 
+function saveCords()
+  savedCords["xcord"] = curCords["xcord"]
+  savedCords["ycord"] = curCords["ycord"]
+  savedCords["zcord"] = curCords["zcord"]
+end
+
 function goTo( x, y, z )
   repeat
-    a.digUp()
+    doDigUp()
   until not turtle.detectUp()
   -- deal with Y cord
-  disty = math.abs( y - ycord )
-  if (y < ycord) then
+  disty = math.abs( y - curCords["ycord"] )
+  if (y < curCords["ycord"]) then
     goDown(disty)
   else
     goUp(disty)
   end
   -- deal with X cord
-  distx = x - xcord
-  if (x > xcord) then
+  distx = x - curCords["xcord"]
+  if (x > curCords["xcord"]) then
     turnToDir(2)
   else
     turnToDir(4)
@@ -141,8 +178,8 @@ function goTo( x, y, z )
   distx = math.abs(distx)
   goForward(distx)
   -- deal with Z cord
-  distz = z - zcord
-  if (z > zcord) then
+  distz = z - curCords["zcord"]
+  if (z > curCords["zcord"]) then
     turnToDir(1)
   else
     turnToDir(3)
@@ -154,13 +191,13 @@ end
 function goForward( times )
   local succeed, count = m.forward(times)
   if direction == 1 then
-    zcord = zcord + count
+    curCords["zcord"] = curCords["zcord"] + count
   elseif direction == 2 then
-    xcord = xcord + count
+    curCords["xcord"] = curCords["xcord"] + count
   elseif direction == 3 then
-    zcord = zcord - count
+    curCords["zcord"] = curCords["zcord"] - count
   elseif direction == 4 then
-    xcord = xcord - count
+    curCords["xcord"] = curCords["xcord"] - count
   end
   printStats()
   return succeed
@@ -168,16 +205,31 @@ end
 
 function goDown( times )
   local succeed, count = m.down(times)
-  ycord = ycord - count
+  curCords["ycord"] = curCords["ycord"] - count
   printStats()
   return succeed
 end
 
 function goUp( times )
   local succeed, count = m.up(times)
-  ycord = ycord + count
+  curCords["ycord"] = curCords["ycord"] + count
   printStats()
   return succeed
+end
+
+function doDigUp()
+  doDropOff()
+  a.digUp()
+end
+
+function doDigDown()
+  doDropOff()
+  a.digDown()
+end
+
+function doDigFront()
+  doDropOff()
+  a.digFront()
 end
 
 function turnToDir( toDir )
@@ -202,9 +254,9 @@ end
 function printStats()
   term.clear()
   term.setCursorPos(1,1)
-  print("xcord = "..xcord)
-  print("ycord = "..ycord)
-  print("zcord = "..zcord)
+  print("xcord = "..curCords["xcord"])
+  print("ycord = "..curCords["ycord"])
+  print("zcord = "..curCords["zcord"])
   print("direction = "..direction)
 end
 
