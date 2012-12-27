@@ -1,0 +1,137 @@
+-- Dar Platform by Darganis
+-- version: 0.0.1 9/3/2012
+
+local m = dagsAPI.Move.new()
+local u = dagsAPI.Utils.new()
+local a = dagsAPI.Action.new()
+
+params = { ... }
+slot = 1
+stop = false
+curLength = 0
+curWidth = 0
+direction = 1
+offset = 0
+
+if #params >= 2 then
+
+  length = tonumber(params[1])
+  width = tonumber(params[2])
+
+else
+
+  print("usage: platform [length] [width] [offset]")
+  print("  - offset optional")
+  return
+
+end
+
+if #params == 3 then
+  offset = tonumber(params[3])
+end
+
+print("Building platform "..length.." blocks long and "..width.." wide...")
+
+-- Utility Functions
+
+function doRefuel()
+  if u.needsFuel() and not u.refuel(16) then
+    term.write("Out of fuel... please place more in slot 16...")
+    repeat
+      term.write(".")
+      sleep(0.5)
+    until u.refuel(16)
+  end
+end
+
+function returnToStart( length, width )
+  if curWidth == 0 then
+    turnToDir(3)
+  else
+    turnToDir(4)
+    m.forward(width)
+    turnToDir(3)
+  end
+  m.forward(length-1)
+end
+
+function rowGoForward( num )
+  m.forward(num)
+  if direction == 2 then
+    curWidth = curWidth + num
+  else
+    curWidth = curWidth - num
+  end
+end
+
+-- Build Functions
+
+function testSlot()
+  turtle.select(slot)
+  while slot < 17 and turtle.getItemCount(slot) == 0 do
+    slot = slot + 1
+    if slot == 16 then
+      print("Out of mats.")
+      stop = true
+      break
+    end
+  end
+end
+
+function placeDown()
+  testSlot()
+  a.placeDown(slot)
+end
+
+function buildRow(num)
+  for i=1,num do
+    rowGoForward(1)
+    placeDown()
+  end
+end
+
+function turnToDir( toDir )
+  local times = math.abs(direction - toDir)
+  local turnTo
+  if direction < toDir and times < 3 then
+    turnTo = "right"
+  elseif direction > toDir and times == 3 then
+    turnTo = "right"
+  else
+    turnTo = "left"
+  end
+  if times == 3 then
+    m.turn(turnTo, 1)
+  else
+    m.turn(turnTo, times)
+  end
+  direction = toDir
+end
+
+-- Run Program
+
+m.forward(1)
+
+if offset > 0 then
+  turnToDir(4)
+  m.forward(offset)
+end
+
+for i=1,length do
+  if stop then
+    print("done...")
+  else
+    doRefuel()
+    placeDown()
+    if curWidth == 0 then
+      turnToDir(2)
+    else
+      turnToDir(4)
+    end
+    buildRow(width-1)
+    turnToDir(1)
+    m.forward(1)
+  end
+end
+
+returnToStart( curLength, curWidth )
