@@ -56,14 +56,14 @@ function row(width)
   return output, curWidth
 end
 
-function level()
+function level(rows)
   local side
   local output1 = false
   local output2 = false
   local curLength = 0
   local curWidth = 0
   -- repeat levels till can move down
-  for i=1,length do
+  for i=1,rows do
     if i%2 == 0 then
       side = 4
     else
@@ -119,6 +119,37 @@ function quarry()
 end
 
 -- Utility Functions
+
+function goTo( x, y, z )
+  repeat
+    a.digUp()
+  until not turtle.detectUp()
+  -- deal with Y cord
+  disty = math.abs( y - ycord )
+  if (y < ycord) then
+    goDown(disty)
+  else
+    goUp(disty)
+  end
+  -- deal with X cord
+  distx = x - xcord
+  if (x > xcord) then
+    turnToDir(2)
+  else
+    turnToDir(4)
+  end
+  distx = math.abs(distx)
+  goForward(distx)
+  -- deal with Z cord
+  distz = z - zcord
+  if (z > zcord) then
+    turnToDir(1)
+  else
+    turnToDir(3)
+  end
+  distz = math.abs(distz)
+  goForward(distz)
+end
 
 function goForward( times )
   local succeed, count = m.forward(times)

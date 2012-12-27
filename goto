@@ -18,7 +18,7 @@ function getDir()
     end
   end
   nx, ny, nz = getPos()
-  print("New: "..nx..","..ny..","..nz)
+  -- print("New: "..nx..","..ny..","..nz)
   if (x == nx) then
     if (nz > z) then
       dir = 2
@@ -48,14 +48,12 @@ end
 
 function moveX()
   distx = x - curx
-  print(distx)
   if (x > curx) then
     setDir(3)
   else
     setDir(1)
   end
   distx = math.abs(distx)
-  print(distx)
   for i = 1, distx do
     while not turtle.forward() do
       while not turtle.up() do
