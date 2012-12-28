@@ -93,6 +93,7 @@ end
 function placeTorch( slot )
   m.turn("right",1)
   a.place(16)
+  turtle.select(1)
   m.turn("left",1)
 end
 
