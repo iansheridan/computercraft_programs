@@ -15,7 +15,7 @@ else
 
   term.clear()
   term.setCursorPos(1,1)
-  term.write("Radius of quarry? ")
+  term.write("Diameter of quarry? ")
   length = tonumber(read())
 
 end
@@ -24,20 +24,22 @@ end
 width = length
 -- Coordinates
 curCords = {}
-curCords["xcord"] = 0
-curCords["ycord"] = 0
-curCords["zcord"] = 0
+curCords.xcord = 0
+curCords.ycord = 0
+curCords.zcord = 0
 savedCords = {}
-savedCords["xcord"] = 0
-savedCords["ycord"] = 0
-savedCords["zcord"] = 0
+savedCords.xcord = 0
+savedCords.ycord = 0
+savedCords.zcord = 0
 -- Direction
 direction = 1
 
 print("")
 
 function refuel()
-  if turtle.getFuelLevel() < 5 then
+  local x,y,z = curCords.xcord, curCords.ycord, curCords.zcord
+  local fuelNeeded = x+y+z + x+y+z + 1
+  if turtle.getFuelLevel() < fuelNeeded then
     print("Refueling...")
     shell.run("refuel", 5)
   end
@@ -98,7 +100,7 @@ function goNextLevel()
 end
 
 function levelReturnToStart( length, width )
-  if curCords["xcord"] == 0 then
+  if curCords.xcord == 0 then
     turnToDir(3)
   else
     turnToDir(4)
@@ -136,7 +138,7 @@ function doDropOff()
     emptyInvemtory()
     turnToDir(1)
     goForward(1)
-    goTo( savedCords["xcord"], savedCords["ycord"], savedCords["zcord"] )
+    goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord )
   end
 end
 
@@ -157,16 +159,16 @@ function quarry()
   goForward(1)
   goNextLevel()
   repeat
-    level(math.abs(length - curCords["xcord"]))
+    level(math.abs(length - curCords.xcord))
   until not goNextLevel()
 end
 
 -- Utility Functions
 
 function saveCords()
-  savedCords["xcord"] = curCords["xcord"]
-  savedCords["ycord"] = curCords["ycord"]
-  savedCords["zcord"] = curCords["zcord"]
+  savedCords.xcord = curCords.xcord
+  savedCords.ycord = curCords.ycord
+  savedCords.zcord = curCords.zcord
 end
 
 function goTo( x, y, z )
@@ -174,15 +176,15 @@ function goTo( x, y, z )
     a.digUp()
   until not turtle.detectUp()
   -- deal with Y cord
-  disty = math.abs( y - curCords["ycord"] )
-  if (y < curCords["ycord"]) then
+  disty = math.abs( y - curCords.ycord )
+  if (y < curCords.ycord) then
     goDown(disty)
   else
     goUp(disty)
   end
   -- deal with X cord
-  distx = x - curCords["xcord"]
-  if (x > curCords["xcord"]) then
+  distx = x - curCords.xcord
+  if (x > curCords.xcord) then
     turnToDir(2)
   else
     turnToDir(4)
@@ -190,8 +192,8 @@ function goTo( x, y, z )
   distx = math.abs(distx)
   goForward(distx)
   -- deal with Z cord
-  distz = z - curCords["zcord"]
-  if (z > curCords["zcord"]) then
+  distz = z - curCords.zcord
+  if (z > curCords.zcord) then
     turnToDir(1)
   else
     turnToDir(3)
@@ -203,13 +205,13 @@ end
 function goForward( times )
   local succeed, count = m.forward(times)
   if direction == 1 then
-    curCords["zcord"] = curCords["zcord"] + count
+    curCords.zcord = curCords.zcord + count
   elseif direction == 2 then
-    curCords["xcord"] = curCords["xcord"] + count
+    curCords.xcord = curCords.xcord + count
   elseif direction == 3 then
-    curCords["zcord"] = curCords["zcord"] - count
+    curCords.zcord = curCords.zcord - count
   elseif direction == 4 then
-    curCords["xcord"] = curCords["xcord"] - count
+    curCords.xcord = curCords.xcord - count
   end
   printStats()
   return succeed
@@ -217,14 +219,14 @@ end
 
 function goDown( times )
   local succeed, count = m.down(times)
-  curCords["ycord"] = curCords["ycord"] - count
+  curCords.ycord = curCords.ycord - count
   printStats()
   return succeed
 end
 
 function goUp( times )
   local succeed, count = m.up(times)
-  curCords["ycord"] = curCords["ycord"] + count
+  curCords.ycord = curCords.ycord + count
   printStats()
   return succeed
 end
@@ -266,12 +268,12 @@ end
 function printStats()
   term.clear()
   term.setCursorPos(1,1)
-  print("xcord = "..curCords["xcord"])
-  print("ycord = "..curCords["ycord"])
-  print("zcord = "..curCords["zcord"])
-  print("saved xcord = "..savedCords["xcord"])
-  print("saved ycord = "..savedCords["ycord"])
-  print("saved zcord = "..savedCords["zcord"])
+  print("xcord = "..curCords.xcord)
+  print("ycord = "..curCords.ycord)
+  print("zcord = "..curCords.zcord)
+  print("saved xcord = "..savedCords.xcord)
+  print("saved ycord = "..savedCords.ycord)
+  print("saved zcord = "..savedCords.zcord)
   print("direction = "..direction)
 end
 
