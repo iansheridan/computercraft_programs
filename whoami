@@ -1,0 +1,7 @@
+-- Dar Who Am I by darganis
+
+local label = os.getComputerLabel()
+local level = turtle.getFuelLevel()
+
+print("Hi, I am "..label..".")
+print("I have a fuel level of "..level..".")
