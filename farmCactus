@@ -129,7 +129,6 @@ while true do
 
   goUp(1)
 
-  turnToDir(1)
   goForward(2)
   turnToDir(4)
   goForward(9)
@@ -153,6 +152,7 @@ while true do
   goForward(7)
   goDown(1)
   goForward(1)
+  turnToDir(1)
 
   emptyInvemtory()
 
