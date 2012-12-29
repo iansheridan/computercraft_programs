@@ -41,7 +41,7 @@ function refuel()
   local fuelNeeded = x+y+z + x+y+z + 1
   if turtle.getFuelLevel() < fuelNeeded then
     print("Refueling...")
-    shell.run("refuel", 5)
+    shell.run("refuel", 10)
   end
 end
 
