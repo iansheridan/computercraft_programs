@@ -30,12 +30,35 @@ Move.new = function ()
     end
     return output, curNum
   end
-  self.forward = function ( num )
+  self.forward = function ( num, dig, suck )
+    local dig = dig or false
+    local suck = suck or false
     local curNum = 0
     local output = false
     while curNum < num do
       output = turtle.forward()
-      if output then
+      if dig then
+        if turtle.detect() then
+          if turtle.dig() then
+            curNum = curNum + 1
+          end
+        elseif turtle.attack() then
+          curNum = curNum + 1
+        elseif output then
+          curNum = curNum + 1
+        end
+      elseif suck then
+        if turtle.detect() then
+          turtle.suck()
+          turtle.suckUp()
+          turtle.suckDown()
+          curNum = curNum + 1
+        elseif turtle.attack() then
+          curNum = curNum + 1
+        elseif output then
+          curNum = curNum + 1
+        end
+      elseif output then
         curNum = curNum + 1
       end
     end
