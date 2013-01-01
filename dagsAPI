@@ -304,14 +304,16 @@ Utils.new = function ()
   local self = {}
   -- Refuel from a certain slot in inventory
   -- use: self.refuel(1)
-  self.refuel = function ( slot )
-    turtle.select(slot)
+  self.refuel = function ( slot, max )
+    local max = max or 64 -- ie. "ALL"
     if turtle.getItemCount(slot) == 0 then
       return false
     end
-    return turtle.refuel()
+    turtle.select(slot)
+    return turtle.refuel(max)
   end
-  self.needsFuel = function ()
+  self.needsFuel = function ( num, max )
+    local num = num or 0
     if turtle.getFuelLevel() == "unlimited" or turtle.getFuelLevel() > 0 then
       return false
     end

@@ -1,6 +1,8 @@
 -- Dar Quarry by Darganis
 -- version: 0.0.2 9/3/2012
 
+-- TODO: convert to use GPS
+
 local m = dagsAPI.Move.new()
 local a = dagsAPI.Action.new()
 local u = dagsAPI.Utils.new()
@@ -39,11 +41,28 @@ savedCords.direction = 1
 print("")
 
 function refuel()
-  local x,y,z = curCords.xcord, curCords.ycord, curCords.zcord
-  local fuelNeeded = x+y+z + x+y+z + 1
-  if turtle.getFuelLevel() < fuelNeeded then
-    print("Refueling...")
-    shell.run("refuel", 10)
+  local x,y,z = curCords.xcord, math.abs(curCords.ycord), curCords.zcord
+  local fuelNeeded = x+y+z + x+y+z + 4
+  if u.needsFuel(fuelNeeded) then
+    print("Refueling from inventory...")
+    for i=1,16 do
+      if u.refuel(i,10) then
+        break
+      end
+    end
+    if u.needsFuel(fuelNeeded) then
+      print("returning to start for refueling...")
+      returnToStart()
+      print("waiting for fuel...")
+      repeat
+        for i=1,16 do
+          if u.refuel(i,10) then
+            break
+          end
+        end
+      until not u.needsFuel(fuelNeeded)
+      goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord, savedCords.direction, true )
+    end
   end
 end
 
@@ -51,6 +70,7 @@ function pillar()
   local output1 = true
   local output2 = true
   local output3 = true
+  refuel()
   doDropOff()
   output1 = goForward(1)
   output2 = doDigUp()
@@ -111,14 +131,17 @@ function goNextLevel()
 end
 
 function levelReturnToStart()
+  local output1 = true
+  local output2 = false
+  local output3 = false
   if curCords.xcord == 0 then
     turnToDir(3)
   else
     turnToDir(4)
-    output1 = goForward(width-1, true)
+    output1 = goForward(width-1)
     turnToDir(3)
   end
-  output2 = goForward(length-1, true)
+  output2 = goForward(length-1)
   output3 = goDown(1)
   print( "levelRTS: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
   return ( output1 and output2 and output3 )
@@ -149,7 +172,6 @@ function doDropOff()
   if isFull then
     print("Inventory full, dropping off items...")
     returnToStart()
-    refuel() -- just in case
     emptyInvemtory()
     goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord, savedCords.direction, true )
   end
