@@ -9,14 +9,15 @@ local u = dagsAPI.Utils.new()
 
 local params = { ... }
 
+term.clear()
+term.setCursorPos(1,1)
+
 if #params == 1 then
 
   length  = tonumber(params[1])
 
 else
 
-  term.clear()
-  term.setCursorPos(1,1)
   term.write("Diameter of quarry? ")
   length = tonumber(read())
 
@@ -125,7 +126,7 @@ function level(rows)
 end
 
 function goNextLevel()
-  output = goDown(2, true)
+  output = goDown(2)
   doDigDown()
   return output
 end
@@ -150,7 +151,7 @@ end
 function returnToStart()
   print("returning to start...")
   saveCords()
-  goTo( 0, 0, 0, 4, true )
+  goTo( 0, 0, 0, 3, true )
 end
 
 function doDropOff()
@@ -255,8 +256,8 @@ function goTo( x, y, z, d, dig )
 end
 
 function goForward( times )
-  local succeed, count = m.forward(times, true)
-  if succeed then
+  local moved, count = m.forward(times, true)
+  if moved or count > 0 then
     if curCords.direction == 1 then
       curCords.zcord = curCords.zcord + count
     elseif curCords.direction == 2 then
@@ -268,12 +269,12 @@ function goForward( times )
     end
   end
   printStats()
-  return succeed
+  return moved
 end
 
 function goDown( times )
   local moved, count = m.down(times, true)
-  if moved then
+  if moved or count > 0 then
     curCords.ycord = curCords.ycord - count
   end
   printStats()
@@ -282,7 +283,7 @@ end
 
 function goUp( times )
   local moved, count = m.up(times, true)
-  if moved then
+  if moved or count > 0 then
     curCords.ycord = curCords.ycord + count
   end
   printStats()

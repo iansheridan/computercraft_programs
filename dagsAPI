@@ -14,8 +14,6 @@ Move.new = function ()
     local num = num or 1
     local curNum = 0
     local moved = false
-    local dug = false
-    local output = false
     while curNum < num do
       if dig then
         if turtle.detectUp() then
@@ -26,20 +24,20 @@ Move.new = function ()
         end
         a.attackUp()
       end
-      output = turtle.up()
-      if output then
+      moved = turtle.up()
+      if moved then
         curNum = curNum + 1
       end
     end
-    return output, curNum
+    return moved, curNum
   end
   self.down = function ( num, dig )
     local dig = dig or false
+    local num = num or 1
     local curNum = 0
     local moved = false
-    local dug = false
-    local output = false
     while curNum < num do
+      moved = false
       if dig then
         if turtle.detectDown() then
           if not a.digDown() then
@@ -49,19 +47,18 @@ Move.new = function ()
         end
         a.attackDown()
       end
-      output = turtle.down()
-      if output then
+      moved = turtle.down()
+      if moved then
         curNum = curNum + 1
       end
     end
-    return output, curNum
+    return moved, curNum
   end
   self.forward = function ( num, dig )
     local dig = dig or false
-    local digCount = 0
+    local num = num or 1
     local curNum = 0
     local moved = false
-    local output = false
     while curNum < num do
       if dig then
         if turtle.detect() then
@@ -72,23 +69,24 @@ Move.new = function ()
         end
         a.attackFront()
       end
-      output = turtle.forward()
-      if output then
+      moved = turtle.forward()
+      if moved then
         curNum = curNum + 1
       end
     end
-    return output, curNum
+    return moved, curNum
   end
   self.back = function ( num )
+    local num = num or 1
     local curNum = 0
-    local output = false
+    local moved = false
     while curNum < num do
-      output = turtle.back()
-      if output then
+      moved = turtle.back()
+      if moved then
         curNum = curNum + 1
       end
     end
-    return output, curNum
+    return moved, curNum
   end
   self.turn = function ( direction, num )
     if num == 0 then
