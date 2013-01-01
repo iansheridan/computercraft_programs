@@ -20,13 +20,18 @@ direction = 1
 print("")
 
 function refuel()
-  while turtle.getFuelLevel() <= 5 do
+  local level = turtle.getFuelLevel()
+  print("Fuel level at "..level)
+  while u.needsFuel() do
     term.clear()
     term.setCursorPos(1,1)
     print("Refueling...")
-    shell.run("refuel", 5)
-    sleep(0.5)
+    if not u.refuel(16) then
+      sleep(0.5)
+    end
+    print("Fuel level now at "..level)
   end
+  turtle.select(1)
 end
 
 forward = function ( num )
@@ -102,7 +107,7 @@ function turnToDir( toDir )
 end
 
 function emptyInvemtory()
-  for i=2,16 do
+  for i=1,15 do
     turtle.select(i)
     turtle.dropDown()
   end
@@ -161,6 +166,7 @@ while true do
     term.clear()
     term.setCursorPos(1,1)
     print( (1100-i).." seconds till next cycle." )
+    refuel()
     sleep(1)
   end
 
