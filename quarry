@@ -20,6 +20,8 @@ else
 
 end
 
+-- show Cords for debugging
+showCords = false
 -- set the width to length
 width = length
 -- Coordinates
@@ -27,12 +29,12 @@ curCords = {}
 curCords.xcord = 0
 curCords.ycord = 0
 curCords.zcord = 0
+curCords.direction = 1
 savedCords = {}
 savedCords.xcord = 0
 savedCords.ycord = 0
 savedCords.zcord = 0
--- Direction
-direction = 1
+savedCords.direction = 1
 
 print("")
 
@@ -46,21 +48,26 @@ function refuel()
 end
 
 function pillar()
-  local output = true
-  output1 = doDigFront()
-  goForward(1)
-  output2 = doDigDown()
-  output3 = doDigUp()
-  return ( output1 and output2 and output3 )
+  local output1 = true
+  local output2 = true
+  local output3 = true
+  doDropOff()
+  output1 = goForward(1)
+  output2 = doDigUp()
+  output3 = doDigDown()
+  print( "pillar: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  return output1
 end
 
 function row(width)
   local curWidth = 0
-  while curWidth < width do
+  local output = true
+  print("digging "..tostring(width).." pillars for row...")
+  repeat
     output = pillar()
     curWidth = curWidth + 1
-  end
-  return output, curWidth
+  until (not output) or curWidth == width
+  return output
 end
 
 function level(rows)
@@ -70,6 +77,7 @@ function level(rows)
   local curLength = 0
   local curWidth = 0
   -- repeat levels till can move down
+  print("digging "..tostring(rows).." rows for level...")
   for i=1,rows do
     if i%2 == 0 then
       side = 4
@@ -78,43 +86,48 @@ function level(rows)
     end
     if i == 1 then
       turnToDir(2)
-      output2, curWidth = row(width-1)
+      output1 = true -- no pillar
+      output2 = row(width-1)
     else
       turnToDir(1)
       output1 = pillar()
       turnToDir(side)
-      output2, curWidth = row(width-1)
+      output2 = row(width-1)
+    end
+    if not output2 or not output1 then
+      return false
     end
     curLength = curLength + 1
   end
-  levelReturnToStart(curLength,curWidth)
+  output3 = levelReturnToStart()
+  print( "level: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  return ( output1 and output2 and output3 )
 end
 
 function goNextLevel()
-  doDigDown()
-  output = goDown(1)
-  doDigDown()
-  output = goDown(1)
+  output = goDown(2, true)
   doDigDown()
   return output
 end
 
-function levelReturnToStart( length, width )
+function levelReturnToStart()
   if curCords.xcord == 0 then
     turnToDir(3)
   else
     turnToDir(4)
-    goForward(width)
+    output1 = goForward(width-1, true)
     turnToDir(3)
   end
-  goForward(length-1)
-  goDown(1)
+  output2 = goForward(length-1, true)
+  output3 = goDown(1)
+  print( "levelRTS: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  return ( output1 and output2 and output3 )
 end
 
-function returnToStart( length, width )
+function returnToStart()
+  print("returning to start...")
   saveCords()
-  goTo( 0, 0, 0 )
-  turnToDir(3)
+  goTo( 0, 0, 0, 4, true )
 end
 
 function doDropOff()
@@ -134,33 +147,48 @@ function doDropOff()
   turtle.select(1)
   -- goTo start if isFull and come back
   if isFull then
+    print("Inventory full, dropping off items...")
     returnToStart()
+    refuel() -- just in case
     emptyInvemtory()
-    turnToDir(1)
-    goForward(1)
-    goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord )
+    goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord, savedCords.direction, true )
   end
 end
 
 function emptyInvemtory()
+  -- face chest
+  turnToDir(3)
+  -- drop off items
   for i=1,16 do
     turtle.select(i)
     turtle.drop()
   end
+  -- reset selected slot to 1
+  turtle.select(1)
 end
 
 function quarry()
+  local output1 = false
+  local output2 = false
   refuel()
   if turtle.getFuelLevel() == 0 then
     print("I am out of fuel. Please give me fuel and try again.")
     return
   end
-  doDigFront()
-  goForward(1)
   goNextLevel()
-  repeat
-    level(math.abs(length - curCords.xcord))
-  until not goNextLevel()
+  while true do
+    output1 = level(length)
+    if output1 then
+      output2 = goNextLevel()
+    end
+    print("quarry: output 1,2="..tostring(output1)..","..tostring(output2))
+    if not output1 or not output2 then
+      break
+    end
+  end
+  print("returning to start...")
+  returnToStart()
+  emptyInvemtory()
 end
 
 -- Utility Functions
@@ -169,18 +197,18 @@ function saveCords()
   savedCords.xcord = curCords.xcord
   savedCords.ycord = curCords.ycord
   savedCords.zcord = curCords.zcord
+  savedCords.direction = curCords.direction
 end
 
-function goTo( x, y, z )
-  repeat
-    a.digUp()
-  until not turtle.detectUp()
+function goTo( x, y, z, d, dig )
+  local d = d or 1
+  local dig = dig or false
   -- deal with Y cord
   disty = math.abs( y - curCords.ycord )
   if (y < curCords.ycord) then
-    goDown(disty)
-  else
-    goUp(disty)
+    goDown(disty, dig)
+  elseif (y > curCords.ycord) then
+    goUp(disty, dig)
   end
   -- deal with X cord
   distx = x - curCords.xcord
@@ -190,7 +218,7 @@ function goTo( x, y, z )
     turnToDir(4)
   end
   distx = math.abs(distx)
-  goForward(distx)
+  goForward(distx, dig)
   -- deal with Z cord
   distz = z - curCords.zcord
   if (z > curCords.zcord) then
@@ -199,59 +227,64 @@ function goTo( x, y, z )
     turnToDir(3)
   end
   distz = math.abs(distz)
-  goForward(distz)
+  goForward(distz, dig)
+  -- deal with direction
+  turnToDir(d)
 end
 
 function goForward( times )
-  local succeed, count = m.forward(times)
-  if direction == 1 then
-    curCords.zcord = curCords.zcord + count
-  elseif direction == 2 then
-    curCords.xcord = curCords.xcord + count
-  elseif direction == 3 then
-    curCords.zcord = curCords.zcord - count
-  elseif direction == 4 then
-    curCords.xcord = curCords.xcord - count
+  local succeed, count = m.forward(times, true)
+  if succeed then
+    if curCords.direction == 1 then
+      curCords.zcord = curCords.zcord + count
+    elseif curCords.direction == 2 then
+      curCords.xcord = curCords.xcord + count
+    elseif curCords.direction == 3 then
+      curCords.zcord = curCords.zcord - count
+    elseif curCords.direction == 4 then
+      curCords.xcord = curCords.xcord - count
+    end
   end
   printStats()
   return succeed
 end
 
 function goDown( times )
-  local succeed, count = m.down(times)
-  curCords.ycord = curCords.ycord - count
+  local moved, count = m.down(times, true)
+  if moved then
+    curCords.ycord = curCords.ycord - count
+  end
   printStats()
-  return succeed
+  return moved
 end
 
 function goUp( times )
-  local succeed, count = m.up(times)
-  curCords.ycord = curCords.ycord + count
+  local moved, count = m.up(times, true)
+  if moved then
+    curCords.ycord = curCords.ycord + count
+  end
   printStats()
-  return succeed
+  return moved
 end
 
 function doDigUp()
-  doDropOff()
-  a.digUp()
+  return a.digUp()
 end
 
 function doDigDown()
-  doDropOff()
-  a.digDown()
+  return a.digDown()
 end
 
 function doDigFront()
-  doDropOff()
-  a.digFront()
+  return a.digFront()
 end
 
 function turnToDir( toDir )
-  local times = math.abs(direction - toDir)
+  local times = math.abs(curCords.direction - toDir)
   local turnTo
-  if direction < toDir and times < 3 then
+  if curCords.direction < toDir and times < 3 then
     turnTo = "right"
-  elseif direction > toDir and times == 3 then
+  elseif curCords.direction > toDir and times == 3 then
     turnTo = "right"
   else
     turnTo = "left"
@@ -261,20 +294,18 @@ function turnToDir( toDir )
   else
     m.turn(turnTo, times)
   end
-  direction = toDir
+  curCords.direction = toDir
   printStats()
 end
 
 function printStats()
-  term.clear()
-  term.setCursorPos(1,1)
-  print("xcord = "..curCords.xcord)
-  print("ycord = "..curCords.ycord)
-  print("zcord = "..curCords.zcord)
-  print("saved xcord = "..savedCords.xcord)
-  print("saved ycord = "..savedCords.ycord)
-  print("saved zcord = "..savedCords.zcord)
-  print("direction = "..direction)
+  if showCords then
+    term.clear()
+    term.setCursorPos(1,1)
+    print("x,y,z,d = "..curCords.xcord..","..curCords.ycord..","..curCords.zcord..","..curCords.direction)
+    print("saved x,y,z,d = "..savedCords.xcord..","..savedCords.ycord..","..savedCords.zcord..","..savedCords.direction)
+    term.setCursorPos(1,3)
+  end
 end
 
 -- pause to close screen

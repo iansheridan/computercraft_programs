@@ -8,10 +8,24 @@
 Move = {}
 Move.new = function ()
   local self = {}
-  self.up = function ( num )
+  local a = Action.new()
+  self.up = function ( num, dig )
+    local dig = dig or false
+    local num = num or 1
     local curNum = 0
+    local moved = false
+    local dug = false
     local output = false
     while curNum < num do
+      if dig then
+        if turtle.detectUp() then
+          if not a.digUp() then
+            print("Bedrock!")
+            return false, curNum
+          end
+        end
+        a.attackUp()
+      end
       output = turtle.up()
       if output then
         curNum = curNum + 1
@@ -19,10 +33,22 @@ Move.new = function ()
     end
     return output, curNum
   end
-  self.down = function ( num )
+  self.down = function ( num, dig )
+    local dig = dig or false
     local curNum = 0
+    local moved = false
+    local dug = false
     local output = false
     while curNum < num do
+      if dig then
+        if turtle.detectDown() then
+          if not a.digDown() then
+            print("Bedrock!")
+            return false, curNum
+          end
+        end
+        a.attackDown()
+      end
       output = turtle.down()
       if output then
         curNum = curNum + 1
@@ -30,35 +56,24 @@ Move.new = function ()
     end
     return output, curNum
   end
-  self.forward = function ( num, dig, suck )
+  self.forward = function ( num, dig )
     local dig = dig or false
-    local suck = suck or false
+    local digCount = 0
     local curNum = 0
+    local moved = false
     local output = false
     while curNum < num do
-      output = turtle.forward()
       if dig then
         if turtle.detect() then
-          if turtle.dig() then
-            curNum = curNum + 1
+          if not a.digFront() then
+            print("Bedrock!")
+            return false, curNum
           end
-        elseif turtle.attack() then
-          curNum = curNum + 1
-        elseif output then
-          curNum = curNum + 1
         end
-      elseif suck then
-        if turtle.detect() then
-          turtle.suck()
-          turtle.suckUp()
-          turtle.suckDown()
-          curNum = curNum + 1
-        elseif turtle.attack() then
-          curNum = curNum + 1
-        elseif output then
-          curNum = curNum + 1
-        end
-      elseif output then
+        a.attackFront()
+      end
+      output = turtle.forward()
+      if output then
         curNum = curNum + 1
       end
     end
@@ -124,25 +139,36 @@ Action = {}
 Action.new = function ()
   local self = {}
   self.digFront = function ()
-    local output = true
-    while turtle.detect() do
-      output = turtle.dig()
+    local output = turtle.dig()
+    repeat
       sleep(0.5)
-    end
+      detected = turtle.detect()
+      if detected then
+        output = turtle.dig()
+        if not output then
+          break
+        end
+      end
+    until not detected
     return output
   end
   self.digUp = function ()
-    local output = true
-    while turtle.detectUp() do
-      output = turtle.digUp()
+    local output = turtle.digUp()
+    repeat
       sleep(0.5)
-    end
+      detected = turtle.detectUp()
+      if detected then
+        output = turtle.digUp()
+        if not output then
+          break
+        end
+      end
+    until not detected
     return output
   end
+  -- here only for completeness
   self.digDown = function ()
-    local output = true
-    output = turtle.digDown()
-    return output
+    return turtle.digDown()
   end
   self.attackFront = function ()
     local output = true
