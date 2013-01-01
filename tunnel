@@ -44,16 +44,15 @@ end
 
 function upUnlimited()
   local curHeight = 0
-  for u = 1,5 do
-    repeat
-      refuel()
-      a.digUp()
-      if m.up() then
-        curHeight = curHeight + 1
-      end
-      sleep(0.25)
-    until turtle.detectUp() == false
-  end
+  repeat
+    refuel()
+    a.digUp()
+    up, count = m.up()
+    if up then
+      curHeight = curHeight + 1
+    end
+    sleep(0.25)
+  until turtle.detectUp() == false
   refuel()
   m.down(curHeight)
 end
@@ -79,7 +78,11 @@ function pillar()
   m.forward(1)
   a.digDown()
   curHeight = curHeight + 1
-  upUntil(height-curHeight)
+  if height == 0 then
+    upUnlimited()
+  else
+    upUntil(height-curHeight)
+  end
 end
 
 function row(width)
