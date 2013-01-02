@@ -76,7 +76,7 @@ function pillar()
   output1 = goForward(1)
   output2 = doDigUp()
   output3 = doDigDown()
-  print( "pillar: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  -- print( "pillar: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
   return output1
 end
 
@@ -121,7 +121,7 @@ function level(rows)
     curLength = curLength + 1
   end
   output3 = levelReturnToStart()
-  print( "level: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  -- print( "level: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
   return ( output1 and output2 and output3 )
 end
 
@@ -144,7 +144,7 @@ function levelReturnToStart()
   end
   output2 = goForward(length-1)
   output3 = goDown(1)
-  print( "levelRTS: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
+  -- print( "levelRTS: output 1,2,3="..tostring(output1)..","..tostring(output2)..","..tostring(output3) )
   return ( output1 and output2 and output3 )
 end
 
@@ -204,7 +204,7 @@ function quarry()
     if output1 then
       output2 = goNextLevel()
     end
-    print("quarry: output 1,2="..tostring(output1)..","..tostring(output2))
+    -- print("quarry: output 1,2="..tostring(output1)..","..tostring(output2))
     if not output1 or not output2 then
       break
     end
