@@ -94,10 +94,12 @@ function row(width)
 end
 
 function placeTorch( slot )
-  m.turn("right",1)
-  a.place(16)
-  turtle.select(1)
-  m.turn("left",1)
+  if turtle.getItemCount(slot) > 0 then
+    m.turn("right",1)
+    a.place(16)
+    turtle.select(1)
+    m.turn("left",1)
+  end
 end
 
 function tunnel()
