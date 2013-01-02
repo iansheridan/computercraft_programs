@@ -1,5 +1,5 @@
--- Dar Tunneler by Darganis
--- version: 0.0.4 9/3/2012
+-- Dar Bridge Maker by Darganis
+-- version: 0.0.1 12/31/2012
 
 local m = dagsAPI.Move.new()
 local u = dagsAPI.Utils.new()
