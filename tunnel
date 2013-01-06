@@ -121,7 +121,7 @@ function tunnel()
       m.turn(getSide(i),1)
       row(width-1)
       if getSide(i) == "right" and ( math.fmod(i,6) == 0 or math.fmod(i,6) == 1 ) then
-        placeTorch()
+        placeTorch(16)
       end
     end
     side = getSide(i)
