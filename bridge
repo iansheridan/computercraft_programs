@@ -8,15 +8,40 @@ local a = dagsAPI.Action.new()
 params = { ... }
 slot = 1
 stop = false
+cover = false
+tunnel = false
 
-if #params == 1 then
+if #params == 1 and params[1] == "help" then
+
+  print("usage: bridge [length]")
+  return
+
+elseif #params == 1 then
 
   length = tonumber(params[1])
 
 else
 
-  print("usage: bridge [length]")
-  return
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Length of tunnel? ")
+  length = tonumber(read())
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Build a cover? [y|N] ")
+  input = read()
+  if input == "y" or input == "Y" then
+    cover = true
+  end
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Dig out space? [y|N] ")
+  input = read()
+  if input == "y" or input == "Y" then
+    tunnel = true
+  end
 
 end
 
@@ -36,6 +61,7 @@ end
 
 function placeDown()
   testSlot()
+  a.digDown()
   a.placeDown(slot)
 end
 
