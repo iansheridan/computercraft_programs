@@ -310,9 +310,9 @@ Utils.new = function ()
     turtle.select(slot)
     return turtle.refuel(max)
   end
-  self.needsFuel = function ( num, max )
+  self.needsFuel = function ( num )
     local num = num or 0
-    if turtle.getFuelLevel() == "unlimited" or turtle.getFuelLevel() > 0 then
+    if turtle.getFuelLevel() == "unlimited" or turtle.getFuelLevel() > num then
       return false
     end
     return true

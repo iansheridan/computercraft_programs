@@ -15,11 +15,20 @@ term.setCursorPos(1,1)
 if #params == 1 then
 
   length  = tonumber(params[1])
+  offsetLevels  = 1
 
 else
 
   term.write("Diameter of quarry? ")
   length = tonumber(read())
+  term.write(tostring(length))
+  term.setCursorPos(1,2)
+  term.write("Level to start? ")
+  offsetLevels = tonumber(read())
+  if not ( offsetLevels > 0 ) then
+    offsetLevels = offsetLevels + 1
+  end
+  term.write(tostring(offsetLevels))
 
 end
 
@@ -198,7 +207,12 @@ function quarry()
     print("I am out of fuel. Please give me fuel and try again.")
     return
   end
-  goNextLevel()
+  for i=1,offsetLevels do
+    goNextLevel()
+    if i > 1 then
+      goDown(1)
+    end
+  end
   while true do
     output1 = level(length)
     if output1 then
