@@ -2,6 +2,6 @@ os.loadAPI("dagsAPI")
 os.loadAPI("turtlex/inventory")
 os.loadAPI("turtlex/turtlex")
 shell.run("whoami")
-if os.getComputerLabel() == "kiel" then
-  shell.run("farmCactus")
+if os.getComputerLabel() == "bob" then
+  shell.run("farm")
 end
