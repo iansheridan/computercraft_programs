@@ -1,0 +1,183 @@
+-- Dar Farm by Darganis
+-- version: 0.0.1 01/26/2012
+
+local m = dagsAPI.Move.new()
+local a = dagsAPI.Action.new()
+local u = dagsAPI.Utils.new()
+
+-- pause a half a second
+sleep(0.5)
+
+-- Coordinates
+curCords = {}
+curCords.xcord = 0
+curCords.ycord = 0
+curCords.zcord = 0
+savedCords = {}
+savedCords.xcord = 0
+savedCords.ycord = 0
+savedCords.zcord = 0
+-- Direction
+direction = 1
+
+print("")
+
+function refuel()
+  print("Fuel level at "..turtle.getFuelLevel())
+  while u.needsFuel() do
+    term.clear()
+    term.setCursorPos(1,1)
+    print("Refueling...")
+    if not u.refuel(16) then
+      sleep(0.5)
+    end
+    print("Fuel level now at "..turtle.getFuelLevel())
+  end
+  turtle.select(1)
+end
+
+forward = function ( num, do_dig )
+  local do_dig = do_dig or false
+  local curNum = 0
+  local output = false
+  refuel()
+  while curNum < num do
+    if turtle.detect() and do_dig then
+      turtle.dig()
+    end
+    output = turtle.forward()
+    if output then
+      if turtle.detectDown() and do_dig then
+        turtle.digDown()
+      end
+      curNum = curNum + 1
+    end
+  end
+  return output, curNum
+end
+
+function goForward( times, do_dig )
+  local do_dig = do_dig or false
+  local succeed, count = forward(times,do_dig)
+  if direction == 1 then
+    curCords.zcord = curCords.zcord + count
+  elseif direction == 2 then
+    curCords.xcord = curCords.xcord + count
+  elseif direction == 3 then
+    curCords.zcord = curCords.zcord - count
+  elseif direction == 4 then
+    curCords.xcord = curCords.xcord - count
+  end
+  printStats()
+  return succeed
+end
+
+function goDown( times )
+  refuel()
+  local succeed, count = m.down(times)
+  curCords.ycord = curCords.ycord - count
+  printStats()
+  return succeed
+end
+
+function goUp( times )
+  refuel()
+  local succeed, count = m.up(times)
+  if succeed then
+    curCords.ycord = curCords.ycord + count
+  end
+  printStats()
+  return succeed
+end
+
+function saveCords()
+  savedCords.xcord = curCords.xcord
+  savedCords.ycord = curCords.ycord
+  savedCords.zcord = curCords.zcord
+end
+
+function turnToDir( toDir )
+  local times = math.abs(direction - toDir)
+  local turnTo
+  if direction < toDir and times < 3 then
+    turnTo = "right"
+  elseif direction > toDir and times == 3 then
+    turnTo = "right"
+  else
+    turnTo = "left"
+  end
+  if times == 3 then
+    m.turn(turnTo, 1)
+  else
+    m.turn(turnTo, times)
+  end
+  direction = toDir
+  printStats()
+end
+
+function emptyInvemtory()
+  for i=1,15 do
+    turtle.select(i)
+    turtle.dropDown()
+  end
+  turtle.select(1)
+end
+
+function printStats()
+  term.clear()
+  term.setCursorPos(1,1)
+  print("xcord = "..curCords.xcord)
+  print("ycord = "..curCords.ycord)
+  print("zcord = "..curCords.zcord)
+  print("saved xcord = "..savedCords.xcord)
+  print("saved ycord = "..savedCords.ycord)
+  print("saved zcord = "..savedCords.zcord)
+  print("direction = "..direction)
+end
+
+-- RUN
+term.clear()
+term.setCursorPos(1,1)
+term.write("Exit? ")
+do_exit = read()
+if do_exit == "y" then
+  return true
+end
+while true do
+
+  refuel()
+  printStats()
+
+  goUp(1)
+
+  for i=1,9 do
+    turnToDir(1)
+    goForward(1,true)
+    if curCords.xcord == 0 then
+      turnToDir(2)
+    else
+      turnToDir(4)
+    end
+    goForward(11,true)
+    refuel()
+  end
+
+  turnToDir(3)
+  goForward(9)
+  turnToDir(4)
+  goForward(11)
+  goDown(1)
+  turnToDir(1)
+
+  emptyInvemtory()
+
+  -- sleep 20 minutes
+  for i=1,1650 do
+    term.clear()
+    term.setCursorPos(1,1)
+    print( (1650-i).." seconds till next cycle." )
+    refuel()
+    sleep(1)
+  end
+
+end
