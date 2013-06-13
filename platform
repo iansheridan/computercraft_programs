@@ -1,5 +1,5 @@
 -- Dar Platform by Darganis
--- version: 0.0.1 9/3/2012
+-- version: 0.1.0 5/13/2013
 
 local m = dagsAPI.Move.new()
 local u = dagsAPI.Utils.new()
@@ -12,6 +12,7 @@ curLength = 0
 curWidth = 0
 direction = 1
 offset = 0
+replace = false
 
 if #params >= 2 then
 
@@ -28,6 +29,16 @@ end
 
 if #params == 3 then
   offset = tonumber(params[3])
+end
+
+
+
+term.clear()
+term.setCursorPos(1,1)
+term.write("Dig out space? [y|N] ")
+input = read()
+if input == "y" or input == "Y" then
+  replace = true
 end
 
 print("Building platform "..length.." blocks long and "..width.." wide...")
@@ -80,6 +91,9 @@ end
 
 function placeDown()
   testSlot()
+  if replace then
+    a.digDown()
+  end
   a.placeDown(slot)
 end
 
