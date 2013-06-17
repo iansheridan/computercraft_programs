@@ -1,0 +1,97 @@
+-- Dar Wall Maker by Darganis
+-- version: 0.0.2 6/31/2012
+
+local m = dagsAPI.Move.new()
+local u = dagsAPI.Utils.new()
+local a = dagsAPI.Action.new()
+
+params = { ... }
+slot = 1
+stop = false
+height = 53
+width = 2
+
+if #params == 1 and params[1] == "help" then
+
+  print("usage: bridge [length]")
+  return
+
+elseif #params == 1 then
+
+  length = tonumber(params[1])
+
+else
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Height of wall? ")
+  height = tonumber(read())
+
+  term.clear()
+  term.setCursorPos(1,1)
+  term.write("Width of wall? ")
+  width = tonumber(read())
+
+end
+
+function mover( times, direction )
+  direction = direction or "up"
+  for i=1,times do
+      if u.needsFuel() and not u.refuel(16) then
+        print("Out of fuel... please place more in slot 16...")
+        while true do
+          if u.refuel(16) then
+            placeMove(direction)
+            break
+          end
+        end
+      elseif stop then
+        print("stopping...")
+        break
+      end
+      placeMove(direction)
+  end
+end
+
+function placeBlock()
+  testSlot()
+  a.digFront()
+  a.place(slot)
+end
+
+function placeMove( direction )
+  placeBlock()
+  if direction == "up" then
+    m.up()
+  else
+    m.down()
+  end
+end
+
+function testSlot()
+  turtle.select(slot)
+  while turtle.getItemCount(slot) == 0 do
+    slot = slot + 1
+    if slot == 17 then
+      print("Out of mats.")
+      stop = true
+      break
+    end
+  end
+end
+
+for i=1,width do
+  if math.fmod(i,2) == 0 then
+    mover(height,"down")
+  else
+    mover(height,"up")
+  end
+  m.turn( "right", 1 )
+  m.forward( 1 )
+  m.turn( "left", 1 )
+end
+
+
+term.clear()
+term.setCursorPos(1,1)
+term.write("Wall complete!")
