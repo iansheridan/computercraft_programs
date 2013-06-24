@@ -1,0 +1,128 @@
+-- Miner by Darganis
+-- requires dagsAPI and Quarry by Darganis
+-- version: 0.0.5 6/24/2013
+
+local m = dagsAPI.Move.new()
+local u = dagsAPI.Utils.new()
+local a = dagsAPI.Action.new()
+
+params = { ... }
+stop = false
+direction = 1
+
+if #params == 3 then
+
+  length = tonumber(params[1])
+  width = tonumber(params[2])
+  quarry_size = tonumber(params[3])
+
+else
+
+  print("usage: mine [length] [width] [quarrySize]")
+  return
+
+end
+
+chestSlot = 16
+
+term.clear()
+term.setCursorPos(1,1)
+
+print("Mining a grid of "..length.." by "..width.." size "..quarry_size.." quarries.")
+
+-- common Functions
+
+function turnToDir( toDir )
+  local times = math.abs(direction - toDir)
+  local turnTo
+  if direction < toDir and times < 3 then
+    turnTo = "right"
+  elseif direction > toDir and times == 3 then
+    turnTo = "right"
+  else
+    turnTo = "left"
+  end
+  if times == 3 then
+    m.turn(turnTo, 1)
+  else
+    m.turn(turnTo, times)
+  end
+  direction = toDir
+end
+
+-- APP functions
+
+function placeChest()
+  a.digFront()
+  a.place( chestSlot )
+  turnToDir( 2 )
+  m.forward( 1, true )
+  turnToDir( 1 )
+  a.digFront()
+  a.place( chestSlot )
+  m.up( 1, true )
+  m.forward( 2, true )
+  turnToDir( 4 )
+  m.forward( 1, true )
+  turnToDir( 1 )
+  m.down( 1, true )
+end
+
+function goToNextQuarryInRow()
+  -- correct direction
+  direction = 3
+  turnToDir( 2 )
+  m.forward( quarry_size, true )
+  turnToDir( 3 )
+  m.forward( 2, true )
+  turnToDir( 1 )
+end
+
+function returnToStart()
+  -- correct direction
+  direction = 3
+  m.up( 1, true )
+  turnToDir( 4 )
+  m.forward( ( quarry_size * ( width-1 ) ), true )
+  turnToDir( 3 )
+  m.forward( ( quarry_size * ( length-1 ) ), true )
+end
+
+function goToNextQuarryRow()
+  -- correct direction
+  direction = 3
+  m.up( 1, true )
+  turnToDir( 4 )
+  m.forward( ( quarry_size * ( width-1 ) ), true )
+  m.down( 1, true )
+  turnToDir( 1 )
+  m.forward( quarry_size-2, true )
+end
+
+-- main APP
+
+chestCount = turtle.getItemCount(chestSlot)
+chestNeed = ( length * width ) * 2
+
+if chestCount < chestNeed then
+  print( "Place place at least "..chestNeed.." chests into slot 16 and try again." )
+  print( "...EXITING" )
+  return
+end
+
+for l=1,length do
+  for w=1,width do
+    placeChest()
+    shell.run( "quarry", tostring(quarry_size), "16" )
+    if l == length and w == width then
+      returnToStart()
+    elseif w < width then
+      goToNextQuarryInRow()
+    end
+  end
+  if l < length then
+    goToNextQuarryRow()
+  end
+end
+
+print( "Done!" )

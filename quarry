@@ -1,5 +1,6 @@
 -- Dar Quarry by Darganis
--- version: 0.0.2 9/3/2012
+-- requires dagsAPI
+-- version: 0.1.2 6/24/2013
 
 -- TODO: convert to use GPS
 
@@ -12,10 +13,16 @@ local params = { ... }
 term.clear()
 term.setCursorPos(1,1)
 
-if #params == 1 then
+if #params == 1 or #params == 2 then
 
   length  = tonumber(params[1])
   offsetLevels  = 1
+
+  if #params == 2 then
+    skip_slot = tonumber(params[2])
+  else
+    skip_slot = 0
+  end
 
 else
 
@@ -28,7 +35,6 @@ else
   if not ( offsetLevels > 0 ) then
     offsetLevels = offsetLevels + 1
   end
-  term.write(tostring(offsetLevels))
 
 end
 
@@ -192,8 +198,10 @@ function emptyInvemtory()
   turnToDir(3)
   -- drop off items
   for i=1,16 do
-    turtle.select(i)
-    turtle.drop()
+    if skip_slot ~= i then
+      turtle.select(i)
+      turtle.drop()
+    end
   end
   -- reset selected slot to 1
   turtle.select(1)
