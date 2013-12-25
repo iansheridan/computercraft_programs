@@ -1,0 +1,12 @@
+-- Installer by Darganis
+-- installs all the common programs using dagsAPI
+-- version: 1.0.0 12/25/2013
+
+shell.run( "pastebin", "get", "Vy3kZZtY", "dagsAPI" )
+shell.run( "pastebin", "get", "WnRJQjGZ", "startup" )
+shell.run( "pastebin", "get", "sEZRvEbN", "tunnel" )
+shell.run( "pastebin", "get", "VpTrMXbc", "quarry" )
+shell.run( "pastebin", "get", "1CZmex19", "whoami" )
+shell.run( "pastebin", "get", "0R8KXt6E", "bridge" )
+shell.run( "pastebin", "get", "nhw1iWXM", "platform" )
+shell.run( "pastebin", "get", "fKdg6PyK", "mine" )

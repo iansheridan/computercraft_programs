@@ -1,5 +1,5 @@
 -- Dar Platform by Darganis
--- version: 0.1.0 5/13/2013
+-- version: 0.1.4 6/22/2013
 
 local m = dagsAPI.Move.new()
 local u = dagsAPI.Utils.new()
@@ -60,19 +60,24 @@ function returnToStart( length, width )
     turnToDir(3)
   else
     turnToDir(4)
-    m.forward(width)
+    m.forward((width-offset)-1)
     turnToDir(3)
   end
-  m.forward(length-1)
+  m.forward(length)
 end
 
 function rowGoForward( num )
-  m.forward(num)
-  if direction == 2 then
+  did_move, count = m.forward(num)
+  if direction == 2 and did_move then
     curWidth = curWidth + num
-  else
+  elseif direction == 4 and did_move then
     curWidth = curWidth - num
+  elseif direction == 1 and did_move then
+    curLength = curLength + num
+  elseif direction == 3 and did_move then
+    curLength = curLength - num
   end
+  print(curLength..":"..curWidth)
 end
 
 -- Build Functions
@@ -124,8 +129,6 @@ end
 
 -- Run Program
 
-m.forward(1)
-
 if offset > 0 then
   turnToDir(4)
   m.forward(offset)
@@ -134,7 +137,9 @@ end
 for i=1,length do
   if stop then
     print("done...")
+    break
   else
+    rowGoForward(1)
     doRefuel()
     placeDown()
     if curWidth == 0 then
@@ -144,8 +149,7 @@ for i=1,length do
     end
     buildRow(width-1)
     turnToDir(1)
-    m.forward(1)
   end
 end
 
-returnToStart( curLength, curWidth )
+returnToStart( length, width )
