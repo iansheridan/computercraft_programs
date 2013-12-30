@@ -1,6 +1,22 @@
 -- Installer by Darganis
 -- installs all the common programs using dagsAPI
--- version: 1.0.0 12/25/2013
+-- version: 1.1.0 12/25/2013
+
+print("..:: Installing Darganis Scripts ::..")
+print("     removing old Darg scripts...")
+
+shell.run( "rm", "dagsAPI" )
+shell.run( "rm", "startup" )
+shell.run( "rm", "tunnel" )
+shell.run( "rm", "quarry" )
+shell.run( "rm", "whoami" )
+shell.run( "rm", "bridge" )
+shell.run( "rm", "platform" )
+shell.run( "rm", "mine" )
+
+print("     ... removed")
+print("     installing Darg scripts...")
+print("")
 
 shell.run( "pastebin", "get", "Vy3kZZtY", "dagsAPI" )
 shell.run( "pastebin", "get", "WnRJQjGZ", "startup" )
@@ -10,3 +26,8 @@ shell.run( "pastebin", "get", "1CZmex19", "whoami" )
 shell.run( "pastebin", "get", "0R8KXt6E", "bridge" )
 shell.run( "pastebin", "get", "nhw1iWXM", "platform" )
 shell.run( "pastebin", "get", "fKdg6PyK", "mine" )
+
+print("")
+print("     ... done")
+print("")
+print("Thank you for installing the scripts by Darganis!")
