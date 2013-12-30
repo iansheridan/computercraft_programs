@@ -1,5 +1,5 @@
 -- Dar Tunneler by Darganis
--- version: 0.0.4 9/3/2012
+-- version: 1.0.0 12/30/2013
 
 local m = dagsAPI.Move.new()
 local a = dagsAPI.Action.new()
@@ -38,7 +38,7 @@ print("")
 function refuel()
   if turtle.getFuelLevel() < 5 then
     print("Refueling...")
-    shell.run("refuel", 5)
+    shell.run("refuel", "5")
   end
 end
 
@@ -46,29 +46,20 @@ function upUnlimited()
   local curHeight = 0
   repeat
     refuel()
-    a.digUp()
-    up, count = m.up()
+    up, count = m.up(1,true)
     if up then
       curHeight = curHeight + 1
     end
-    sleep(0.25)
-  until turtle.detectUp() == false
+  until turtle.detectUp() == false or not up
   refuel()
-  m.down(curHeight)
+  m.down(curHeight,true)
 end
 
 function upUntil( num )
-  local curHeight = 0
-  a.digUp()
-  curHeight = curHeight + 1
-  while curHeight < num do
-    refuel()
-    m.up(1)
-    a.digUp()
-    curHeight = curHeight + 1
-  end
+  local lnum = num - 1
   refuel()
-  m.down(num-1)
+  up, count = m.up(lnum,true)
+  m.down(count,true)
 end
 
 function pillar()
