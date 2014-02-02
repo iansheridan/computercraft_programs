@@ -1,5 +1,5 @@
 -- Dar Platform by Darganis
--- version: 0.1.4 6/22/2013
+-- version: 1.0.3 12/31/2013
 
 local m = dagsAPI.Move.new()
 local u = dagsAPI.Utils.new()
@@ -67,15 +67,18 @@ function returnToStart( length, width )
 end
 
 function rowGoForward( num )
-  did_move, count = m.forward(num)
-  if direction == 2 and did_move then
-    curWidth = curWidth + num
-  elseif direction == 4 and did_move then
-    curWidth = curWidth - num
-  elseif direction == 1 and did_move then
-    curLength = curLength + num
-  elseif direction == 3 and did_move then
-    curLength = curLength - num
+  print("direction:"..direction)
+  local moved, count = m.forward(times, true)
+  if moved or count > 0 then
+    if direction == 1 then
+      curLength = curLength + count
+    elseif direction == 2 then
+      curWidth = curWidth + count
+    elseif direction == 3 then
+      curLength = curLength - count
+    elseif direction == 4 then
+      curWidth = curWidth - count
+    end
   end
   print(curLength..":"..curWidth)
 end
@@ -84,7 +87,7 @@ end
 
 function testSlot()
   turtle.select(slot)
-  while slot < 17 and turtle.getItemCount(slot) == 0 do
+  while slot <= 16 and turtle.getItemCount(slot) == 0 do
     slot = slot + 1
     if slot == 16 then
       print("Out of mats.")
@@ -129,18 +132,23 @@ end
 
 -- Run Program
 
+doRefuel()
+
 if offset > 0 then
+  m.forward(1)
   turnToDir(4)
   m.forward(offset)
+  turnToDir(1)
+  m.back(1)
 end
 
 for i=1,length do
+  doRefuel()
   if stop then
     print("done...")
     break
   else
     rowGoForward(1)
-    doRefuel()
     placeDown()
     if curWidth == 0 then
       turnToDir(2)

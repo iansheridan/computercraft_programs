@@ -1,5 +1,5 @@
 -- Dar Tunneler by Darganis
--- version: 1.0.0 12/30/2013
+-- version: 1.0.2 12/30/2013
 
 local m = dagsAPI.Move.new()
 local a = dagsAPI.Action.new()
@@ -56,10 +56,14 @@ function upUnlimited()
 end
 
 function upUntil( num )
-  local lnum = num - 1
+  local lnum = num
   refuel()
-  up, count = m.up(lnum,true)
-  m.down(count,true)
+  if num == 1 then
+    a.digUp()
+  else
+    up, count = m.up(lnum,true)
+    m.down(count,true)
+  end
 end
 
 function pillar()

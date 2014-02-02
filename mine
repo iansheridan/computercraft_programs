@@ -1,6 +1,6 @@
 -- Miner by Darganis
 -- requires dagsAPI and Quarry by Darganis
--- version: 0.0.5 6/24/2013
+-- version: 0.0.7 6/25/2013
 
 local m = dagsAPI.Move.new()
 local u = dagsAPI.Utils.new()
@@ -55,16 +55,8 @@ end
 function placeChest()
   a.digFront()
   a.place( chestSlot )
-  turnToDir( 2 )
-  m.forward( 1, true )
-  turnToDir( 1 )
-  a.digFront()
-  a.place( chestSlot )
   m.up( 1, true )
   m.forward( 2, true )
-  turnToDir( 4 )
-  m.forward( 1, true )
-  turnToDir( 1 )
   m.down( 1, true )
 end
 
@@ -102,7 +94,7 @@ end
 -- main APP
 
 chestCount = turtle.getItemCount(chestSlot)
-chestNeed = ( length * width ) * 2
+chestNeed = ( length * width )
 
 if chestCount < chestNeed then
   print( "Place place at least "..chestNeed.." chests into slot 16 and try again." )
