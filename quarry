@@ -1,6 +1,6 @@
 -- Dar Quarry by Darganis
 -- requires dagsAPI
--- version: 0.1.2 6/24/2013
+-- version: 1.0.3 2/23/2014
 
 -- TODO: convert to use GPS
 
@@ -38,6 +38,21 @@ else
 
 end
 
+use_enderchest = false
+
+term.clear()
+term.setCursorPos(1,1)
+print("Use EnderChest [y|N]? ")
+print("You must have an enderchest in slot 16 for this to work.")
+term.setCursorPos(23,1)
+input = read()
+if input.upper(input) == "Y" then
+  term.clear()
+  print("Using Ender Chest!")
+  use_enderchest = true
+  skip_slot = 16
+end
+
 -- show Cords for debugging
 showCords = false
 -- set the width to length
@@ -62,7 +77,7 @@ function refuel()
   if u.needsFuel(fuelNeeded) then
     print("Refueling from inventory...")
     for i=1,16 do
-      if u.refuel(i,10) then
+      if u.refuel(i,20) then
         break
       end
     end
@@ -187,20 +202,36 @@ function doDropOff()
   -- goTo start if isFull and come back
   if isFull then
     print("Inventory full, dropping off items...")
-    returnToStart()
-    emptyInvemtory()
-    goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord, savedCords.direction, true )
+    if use_enderchest then
+      emptyInvemtory()
+    else
+      returnToStart()
+      emptyInvemtory()
+      goTo( savedCords.xcord, savedCords.ycord, savedCords.zcord, savedCords.direction, true )
+    end
   end
 end
 
 function emptyInvemtory()
-  -- face chest
-  turnToDir(3)
-  -- drop off items
-  for i=1,16 do
-    if skip_slot ~= i then
-      turtle.select(i)
-      turtle.drop()
+  if use_enderchest then
+    a.placeUp(16)
+    for i=1,15 do
+      if skip_slot ~= i then
+        turtle.select(i)
+        turtle.dropUp()
+      end
+    end
+    turtle.select(16)
+    a.digUp()
+  else
+    -- face chest
+    turnToDir(3)
+    -- drop off items
+    for i=1,16 do
+      if skip_slot ~= i then
+        turtle.select(i)
+        turtle.drop()
+      end
     end
   end
   -- reset selected slot to 1
@@ -231,7 +262,6 @@ function quarry()
       break
     end
   end
-  print("returning to start...")
   returnToStart()
   emptyInvemtory()
 end

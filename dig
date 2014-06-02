@@ -1,0 +1,37 @@
+-- Dig by Darganis
+-- version: 1.0.0 2/26/2014
+
+local a = dagsAPI.Action.new()
+
+local params = { ... }
+
+direction = "front"
+
+if #params >= 1 then
+
+  direction = params[1]
+
+else
+
+  usage()
+  return
+
+end
+
+function usage()
+  print("usage: dig [front|up|down]")
+end
+
+function dig()
+  if direction == "front" then
+    a.digFront()
+  elseif direction == "up" then
+    a.digUp()
+  elseif direction == "down" then
+    a.digDown()
+  else
+    usage()
+  end
+end
+
+dig()

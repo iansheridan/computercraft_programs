@@ -1,5 +1,5 @@
 -- Dags API by Darganis
--- Version: 0.0.2 9/3/2012
+-- Version: 1.2.2 2/25/2014
 
 --
 -- class Move
@@ -137,36 +137,48 @@ Action = {}
 Action.new = function ()
   local self = {}
   self.digFront = function ()
-    local output = turtle.dig()
-    repeat
-      sleep(0.5)
-      detected = turtle.detect()
-      if detected then
-        output = turtle.dig()
-        if not output then
-          break
+    if turtle.detect() then
+      local output = turtle.dig()
+      repeat
+        sleep(0.5)
+        detected = turtle.detect()
+        if detected then
+          output = turtle.dig()
+          if not output then
+            break
+          end
         end
-      end
-    until not detected
-    return output
+      until not detected
+      return output
+    else
+      return true
+    end
   end
   self.digUp = function ()
-    local output = turtle.digUp()
-    repeat
-      sleep(0.5)
-      detected = turtle.detectUp()
-      if detected then
-        output = turtle.digUp()
-        if not output then
-          break
+    if turtle.detectUp() then
+      local output = turtle.digUp()
+      repeat
+        sleep(0.5)
+        detected = turtle.detectUp()
+        if detected then
+          output = turtle.digUp()
+          if not output then
+            break
+          end
         end
-      end
-    until not detected
-    return output
+      until not detected
+      return output
+    else
+      return true
+    end
   end
   -- here only for completeness
   self.digDown = function ()
-    return turtle.digDown()
+    if turtle.detectDown() then
+      return turtle.digDown()
+    else
+      return true
+    end
   end
   self.attackFront = function ()
     local output = true
@@ -200,6 +212,21 @@ Action.new = function ()
   self.placeDown = function ( slot )
     turtle.select(slot)
     turtle.placeDown()
+  end
+  -- slot, required
+  -- set, must be a table of numbers
+  self.emptyInvIntoEnderchest = function ( slot, set )
+    local skip_slots = Set( set ) or Set( { slot } )
+    self.digUp()
+    self.placeUp(slot)
+    for i=1,16 do
+      if not skip_slots[i] then
+        turtle.select(i)
+        turtle.dropUp()
+      end
+    end
+    turtle.select(slot)
+    self.digUp()
   end
   return self
 end
@@ -317,6 +344,23 @@ Utils.new = function ()
     end
     return true
   end
+  self.invFull = function ()
+    local isFull
+    local count
+    -- test inventory
+    for i=1,16 do
+      turtle.select(i)
+      count = turtle.getItemCount(i)
+      if count == 0 then
+        isFull = false
+        break
+      else
+        isFull = true
+      end
+    end
+    turtle.select(1)
+    return isFull
+  end
   self.dropAllItems = function (  )
     for slot=1,16 do
       turtle.select(slot)
@@ -417,6 +461,16 @@ FileStore.new = function ( name )
   self.write = function ( text )
     self.save_to_file(text)
   end
+end
+
+
+--
+-- class Set
+--
+function Set (list)
+  local set = {}
+  for _, l in ipairs(list) do set[l] = true end
+  return set
 end
 
 print("Dags API is loaded")

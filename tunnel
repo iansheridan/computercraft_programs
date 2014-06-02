@@ -1,5 +1,5 @@
 -- Dar Tunneler by Darganis
--- version: 1.0.2 12/30/2013
+-- version: 1.1.3 2/25/2014
 
 local m = dagsAPI.Move.new()
 local a = dagsAPI.Action.new()
@@ -7,6 +7,8 @@ local u = dagsAPI.Utils.new()
 local q = dagsAPI.Queue.new(0)
 
 local params = { ... }
+
+use_enderchest = false
 
 if #params == 3 then
 
@@ -33,7 +35,43 @@ else
 
 end
 
-print("")
+skip_slots = {}
+
+use_enderchest = false
+ec_in_slot = 16
+
+term.clear()
+term.setCursorPos(1,1)
+print("Use EnderChest [y|N]? ")
+print("You must have an enderchest in slot 16 for this to work.")
+term.setCursorPos(23,1)
+input = read()
+if input.upper(input) == "Y" then
+  term.clear()
+  term.setCursorPos(1,1)
+  print("Using Ender Chest!")
+  sleep(0.5)
+  use_enderchest = true
+  table.insert(skip_slots, ec_in_slot)
+end
+
+do_place_torches = false
+
+term.clear()
+term.setCursorPos(1,1)
+print("Place torches [y|N]? ")
+print("You must have torches in slot 15 for this to work.")
+term.setCursorPos(21,1)
+input = read()
+if input.upper(input) == "Y" then
+  term.clear()
+  term.setCursorPos(1,1)
+  do_place_torches = true
+  table.insert(skip_slots, 15)
+end
+
+
+term.clear()
 
 function refuel()
   if turtle.getFuelLevel() < 5 then
@@ -56,12 +94,13 @@ function upUnlimited()
 end
 
 function upUntil( num )
-  local lnum = num
+  local lnum = num-1
   refuel()
   if num == 1 then
     a.digUp()
   else
     up, count = m.up(lnum,true)
+    a.digUp()
     m.down(count,true)
   end
 end
@@ -78,6 +117,9 @@ function pillar()
   else
     upUntil(height-curHeight)
   end
+  if use_enderchest and u.invFull() then
+    a.emptyInvIntoEnderchest(ec_in_slot, skip_slots)
+  end
 end
 
 function row(width)
@@ -91,7 +133,7 @@ end
 function placeTorch( slot )
   if turtle.getItemCount(slot) > 0 then
     m.turn("right",1)
-    a.place(16)
+    a.place(slot)
     turtle.select(1)
     m.turn("left",1)
   end
@@ -115,8 +157,8 @@ function tunnel()
       pillar()
       m.turn(getSide(i),1)
       row(width-1)
-      if getSide(i) == "right" and ( math.fmod(i,6) == 0 or math.fmod(i,6) == 1 ) then
-        placeTorch(16)
+      if do_place_torches and getSide(i) == "right" and ( math.fmod(i,6) == 0 or math.fmod(i,6) == 1 ) then
+        placeTorch(15)
       end
     end
     side = getSide(i)
